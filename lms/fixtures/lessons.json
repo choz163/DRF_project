@@ -1,0 +1,13 @@
+[
+  {
+    "model": "lms.lesson",
+    "pk": 1,
+    "fields": {
+      "course": 1,
+      "name": "Demo Lesson",
+      "description": "This is a demo lesson",
+      "preview": "",
+      "video_url": "http://example.com/video.mp4"
+    }
+  }
+]
