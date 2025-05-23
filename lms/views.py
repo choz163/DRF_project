@@ -1,38 +1,68 @@
-from rest_framework import viewsets
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import viewsets, status, generics
+from rest_framework.views import APIView
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
+from .models import Course, Lesson, Subscription
+from .serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
 
-from users.permissions import IsOwnerOrNonModeratorCreate
-from .models import Course, Lesson
-from .serializers import CourseSerializer, LessonSerializer
+
+class LessonPagination(PageNumberPagination):
+    page_size = 10
 
 
 class CourseViewSet(viewsets.ModelViewSet):
+    queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [IsOwnerOrNonModeratorCreate]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
-        return Course.objects.filter(owner=self.request.user)
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def subscribe(self, request, pk=None):
+        course = self.get_object()
+        sub, created = Subscription.objects.get_or_create(
+            user=request.user, course=course
+        )
+        if not created:
+            return Response({'detail': 'Already subscribed'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(SubscriptionSerializer(sub).data, status=status.HTTP_201_CREATED)
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+    @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated])
+    def unsubscribe(self, request, pk=None):
+        course = self.get_object()
+        sub = Subscription.objects.filter(user=request.user, course=course).first()
+        if not sub:
+            return Response({'detail': 'Not subscribed'}, status=status.HTTP_400_BAD_REQUEST)
+        sub.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
+class CourseRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 class LessonViewSet(viewsets.ModelViewSet):
-    serializer_class = LessonSerializer
-    permission_classes = [IsOwnerOrNonModeratorCreate]
-
-    def get_queryset(self):
-        return Lesson.objects.filter(owner=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
-
-class LessonListCreateView(ListCreateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = LessonPagination
 
 
-class LessonDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
+class SubscriptionAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        course_id = request.data.get("course_id")
+        course = get_object_or_404(Course, id=course_id)
+        qs = Subscription.objects.filter(user=user, course=course)
+        if qs.exists():
+            qs.delete()
+            message = "подписка удалена"
+        else:
+            Subscription.objects.create(user=user, course=course)
+            message = "подписка добавлена"
+        return Response({"message": message}, status=status.HTTP_200_OK)
+
+
