@@ -1,4 +1,4 @@
-import stripe
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-y(yo)6_2_=x-%o!=m8$709ri7!10#o%$#$%nnk8t^#(x=62@-0"
 
-STRIPE_SECRET_KEY = "sk_test_BQokikJOvBiI2HlWgH4olfQ2"
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 
 
 DEBUG = True
