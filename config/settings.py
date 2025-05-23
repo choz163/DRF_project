@@ -1,3 +1,4 @@
+import stripe
 from pathlib import Path
 from datetime import timedelta
 
@@ -5,8 +6,9 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-
 SECRET_KEY = "django-insecure-y(yo)6_2_=x-%o!=m8$709ri7!10#o%$#$%nnk8t^#(x=62@-0"
+
+STRIPE_SECRET_KEY = "sk_test_BQokikJOvBiI2HlWgH4olfQ2"
 
 
 DEBUG = True
@@ -28,9 +30,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_filters',
+    'drf_yasg',
 
     'users',
     'lms',
+    'payments'
 ]
 
 REST_FRAMEWORK = {
@@ -109,6 +113,14 @@ AUTH_PASSWORD_VALIDATORS = [
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+SWAGGER_SETTINGS = {
+
+'DEFAULT_INFO': 'DRF_project.urls.api_info',
+
+'USE_SESSION_AUTH': False,
+
 }
 
 
