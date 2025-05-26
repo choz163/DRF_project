@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
+
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,11 +33,21 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'drf_yasg',
+    'django_celery_beat',
 
     'users',
     'lms',
     'payments'
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
 
 REST_FRAMEWORK = {
   'DEFAULT_FILTER_BACKENDS': [
@@ -124,15 +136,28 @@ SWAGGER_SETTINGS = {
 }
 
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "eu-ru"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
 USE_TZ = True
 
+CELERY_BEAT_SCHEDULE = {
+       'deactivate-inactive-users-every-day': {
+           'task': 'accounts.tasks.deactivate_inactive_users',
+           'schedule': crontab(hour=0, minute=0),
+       },
+   }
 
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_TIMEZONE = "Australia/Tasmania"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_ENABLE_UTC        = False
+CELERY_TASK_TIME_LIMIT = 30 * 60
 
 STATIC_URL = "static/"
 
