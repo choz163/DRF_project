@@ -11,13 +11,19 @@ git clone <URL вашего репо> && cd <repo>
 cp .env.example .env  
 # Откройте .env и пропишите:
 # SECRET_KEY, DEBUG, параметры БД и Redis
+# Подготовка папок:
+mkdir -p static media
 
 ## 4. Сборка и запуск всех сервисов
 docker-compose up --build -d
 
+
 ## 5. Миграции и суперпользователь
 # Применить миграции
 docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python manage.py collectstatic --noinput
+
 # Создать суперпользователя
 docker-compose exec web python manage.py createsuperuser
 
