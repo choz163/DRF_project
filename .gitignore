@@ -6,7 +6,6 @@ __pycache__/
 ~$*
 
 # Игнорируем папки с кэшем
-__pycache__/
 *.pyc
 
 # C extensions
@@ -28,6 +27,8 @@ poetry.lock
 .eggs/
 lib/
 lib64/
+static/
+media/
 parts/
 sdist/
 pyproject.toml
@@ -57,7 +58,6 @@ pip-delete-this-directory.txt
 .coverage
 .coverage.*
 .cache
-.env
 nosetests.xml
 coverage.xml
 *.cover
@@ -144,6 +144,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env.example
+
 
 # Spyder project settings
 .spyderproject
