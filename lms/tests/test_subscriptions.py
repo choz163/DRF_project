@@ -1,9 +1,13 @@
+import os
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from lms.models import Course, Subscription
+from django import setup
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+setup()
 
 User = get_user_model()
 
