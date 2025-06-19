@@ -1,26 +1,24 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 from datetime import timedelta
 from celery.schedules import crontab
 
-
-
+# 1. Пути
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# 2. Загружаем .env
+load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = "django-insecure-y(yo)6_2_=x-%o!=m8$709ri7!10#o%$#$%nnk8t^#(x=62@-0"
+# 3. Секреты и флаги
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+# 4. Allowed hosts
+# в .env должно быть как: DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
-
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
-AUTH_USER_MODEL = 'users.User'
-
-
-
+# 5. Приложения
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -37,22 +35,25 @@ INSTALLED_APPS = [
 
     'users',
     'lms',
-    'payments'
+    'payments',
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = os.getenv('EMAIL_PORT')
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = True
+AUTH_USER_MODEL = 'users.User'
+
+# 6. Email
+EMAIL_BACKEND      = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST         = os.getenv('EMAIL_HOST')
+EMAIL_PORT         = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_HOST_USER    = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD= os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS      = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('1','true','yes')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
-
+# 7. REST Framework
 REST_FRAMEWORK = {
-  'DEFAULT_FILTER_BACKENDS': [
-    'django_filters.rest_framework.DjangoFilterBackend',
-    'rest_framework.filters.OrderingFilter',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -64,7 +65,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-
+# 8. Миддлвары, URL, шаблоны, WSGI
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -94,75 +95,70 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
-
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# 9. База данных
+if os.getenv('POSTGRES_DB'):
+    DATABASES = {
+        'default': {
+            'ENGINE':   'django.db.backends.postgresql',
+            'NAME':     os.getenv('POSTGRES_DB'),
+            'USER':     os.getenv('POSTGRES_USER'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+            'HOST':     os.getenv('POSTGRES_HOST', 'localhost'),
+            'PORT':     os.getenv('POSTGRES_PORT', '5432'),
+        }
     }
-}
+else:
+    # фолбэк на sqlite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
-
-
-
+# 10. Парольные валидаторы
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# 11. JWT
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_LIFETIME_MINUTES', 60))),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+# 12. Swagger
 SWAGGER_SETTINGS = {
-
-'DEFAULT_INFO': 'DRF_project.urls.api_info',
-
-'USE_SESSION_AUTH': False,
-
+    'USE_SESSION_AUTH': False,
 }
 
-
-LANGUAGE_CODE = "eu-ru"
-
-TIME_ZONE = 'Europe/Moscow'
-
+# 13. Локализация и таймзоны
+LANGUAGE_CODE = "ru-ru"
+TIME_ZONE = os.getenv('DJANGO_TIME_ZONE', 'Europe/Moscow')
 USE_I18N = True
-
 USE_TZ = True
 
+# 14. Celery
+CELERY_BROKER_URL        = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND    = os.getenv('CELERY_RESULT_BACKEND')
+CELERY_TIMEZONE          = os.getenv('CELERY_TIME_ZONE', TIME_ZONE)
+CELERY_ENABLE_UTC        = os.getenv('CELERY_ENABLE_UTC', 'False').lower() in ('1','true','yes')
+CELERY_TASK_TRACK_STARTED= True
+CELERY_TASK_TIME_LIMIT   = 30 * 60
+
 CELERY_BEAT_SCHEDULE = {
-       'deactivate-inactive-users-every-day': {
-           'task': 'accounts.tasks.deactivate_inactive_users',
-           'schedule': crontab(hour=0, minute=0),
-       },
-   }
+    'deactivate-inactive-users-every-day': {
+        'task': 'accounts.tasks.deactivate_inactive_users',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
 
-
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
-CELERY_TIMEZONE = "Australia/Tasmania"
-CELERY_TASK_TRACK_STARTED = True
-CELERY_ENABLE_UTC        = False
-CELERY_TASK_TIME_LIMIT = 30 * 60
-
-STATIC_URL = "static/"
-
-MEDIA_URL = '/media/'
+# 15. Статика и медиа
+STATIC_URL = '/static/'
+MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
