@@ -1,3 +1,4 @@
+import json
 import os
 from django.urls import reverse
 from rest_framework import status
@@ -21,15 +22,23 @@ class SubscriptionTestCase(APITestCase):
         self.url = reverse('subscription')
         self.detail_url = reverse('course-detail', args=[self.course.id])
 
-
     def test_subscribe_and_unsubscribe(self):
         # подписка
-        resp = self.client.post(self.url, {'course_id': self.course.id})
+        resp = self.client.post(
+            self.url,
+            data=json.dumps({'course_id': self.course.id}),
+            content_type='application/json'
+        )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data['message'], 'подписка добавлена')
         self.assertTrue(Subscription.objects.filter(user=self.user, course=self.course).exists())
+
         # отписка
-        resp = self.client.post(self.url, {'course_id': self.course.id})
+        resp = self.client.post(
+            self.url,
+            data=json.dumps({'course_id': self.course.id}),
+            content_type='application/json'
+        )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data['message'], 'подписка удалена')
         self.assertFalse(Subscription.objects.filter(user=self.user, course=self.course).exists())
