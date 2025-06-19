@@ -1,9 +1,6 @@
-name: CI/CD Pipeline
+name: Django CI/CD Pipeline
 
-on:
-  push:
-    branches:
-      - ['*']
+on: [push, pull_request]
 
 jobs:
   tests:
