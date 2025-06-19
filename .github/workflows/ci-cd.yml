@@ -50,10 +50,7 @@ jobs:
             
             # JWT
             JWT_LIFETIME_MINUTES=60
-            
 
-        timeout-minutes:
-        continue-on-error: false
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
