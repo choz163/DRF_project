@@ -49,6 +49,7 @@ jobs:
             SECRET_KEY=django-insecure-"sk_test_BQokikJOvBiI2HlWgH4olfQ2"
             DEBUG=True
             DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+            STRIPE_SECRET_KEY="sk_test_51RRyQfHCetD6MjVzS2xsYQCQwTbqnDnmKKJNP7x3j3qGbUflqQjUSu21kXZhbOZRQYPYiRoYanzqzsZLP40Awlal00voYQQnsa"
             
             # PostgreSQL
             POSTGRES_DB=mydb

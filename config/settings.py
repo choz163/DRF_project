@@ -4,21 +4,21 @@ from dotenv import load_dotenv
 from datetime import timedelta
 from celery.schedules import crontab
 
-# 1. Пути
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 2. Загружаем .env
+
 load_dotenv(BASE_DIR / '.env')
 
-# 3. Секреты и флаги
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'your_default_value')
+
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('1', 'true', 'yes')
 
-# 4. Allowed hosts
-# в .env должно быть как: DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
-# 5. Приложения
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'users.User'
 
-# 6. Email
+
 EMAIL_BACKEND      = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST         = os.getenv('EMAIL_HOST')
 EMAIL_PORT         = int(os.getenv('EMAIL_PORT', 587))
@@ -49,7 +49,7 @@ EMAIL_HOST_PASSWORD= os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS      = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('1','true','yes')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
-# 7. REST Framework
+
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -65,7 +65,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-# 8. Миддлвары, URL, шаблоны, WSGI
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -95,7 +95,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# 9. База данных
+
 if os.getenv('POSTGRES_DB'):
     DATABASES = {
         'default': {
@@ -108,7 +108,7 @@ if os.getenv('POSTGRES_DB'):
         }
     }
 else:
-    # фолбэк на sqlite
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -116,7 +116,7 @@ else:
         }
     }
 
-# 10. Парольные валидаторы
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -124,24 +124,24 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# 11. JWT
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_LIFETIME_MINUTES', 60))),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# 12. Swagger
+
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
 }
 
-# 13. Локализация и таймзоны
+
 LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = os.getenv('DJANGO_TIME_ZONE', 'Europe/Moscow')
 USE_I18N = True
 USE_TZ = True
 
-# 14. Celery
+
 CELERY_BROKER_URL        = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND    = os.getenv('CELERY_RESULT_BACKEND')
 CELERY_TIMEZONE          = os.getenv('CELERY_TIME_ZONE', TIME_ZONE)
@@ -156,7 +156,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# 15. Статика и медиа
+
 STATIC_URL = '/static/'
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
