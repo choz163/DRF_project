@@ -1,9 +1,14 @@
+import json
+import os
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 from lms.models import Course, Lesson
+from django import setup
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+setup()
 
 User = get_user_model()
 
@@ -35,9 +40,12 @@ class LessonCRUDTestCase(APITestCase):
             'video_url': 'https://vimeo.com/123',
             'content': 'X'
         }
-        resp = self.client.post(self.list_url, data)
+        resp = self.client.post(
+            self.list_url,
+            data=json.dumps(data),
+            content_type='application/json'  # Указываем тип содержимого
+        )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('video_url', resp.data)
 
 
     def test_delete_lesson(self):

@@ -1,9 +1,13 @@
+import os
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, force_authenticate, APITestCase
-from lms.views import CourseRetrieveUpdateDestroyView, SubscriptionAPIView
+from lms.views import SubscriptionAPIView
 from lms.models import Course, Subscription
+from django import setup
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+setup()
 
 User = get_user_model()
 
